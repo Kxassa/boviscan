@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install device + api
+        run: |
+          python -m pip install -U pip
+          pip install -e "./device[dev]"
+          pip install -e "./api[dev]"
+      - name: Lint (ruff)
+        run: |
+          ruff check device/src api/src
+      - name: Device tests + mock pipeline
+        run: |
+          pytest -q device/tests
+          LW_CAMERA_BACKEND=mock LW_INFERENCE_BACKEND=mock python -m livestock_weight_device --steps 15
+      - name: API tests
+        run: |
+          pytest -q api/tests
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build

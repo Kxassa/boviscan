@@ -1,0 +1,19 @@
+[Unit]
+Description=livestock-weight edge pipeline
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/opt/livestock-weight/device
+Environment=LIVESTOCK_WEIGHT_CONFIG=/etc/livestock-weight/device.yaml
+Environment=LW_CAMERA_BACKEND=picamera2
+Environment=LW_INFERENCE_BACKEND=hailo
+# Long mock/dev runs: large step count; replace with a proper daemon loop in Phase 1
+ExecStart=/opt/livestock-weight/device/.venv/bin/python -m livestock_weight_device --config /etc/livestock-weight/device.yaml --steps 1000000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

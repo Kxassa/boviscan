@@ -1,0 +1,20 @@
+# Example edge config for livestock-weight (copy to device.yaml)
+species_default: cattle
+pipeline_interval_s: 0.2
+
+camera:
+  backend: mock          # mock | picamera2
+  height_m: 3.0
+  fov_horizontal_deg: 66.0
+  width: 1280
+  height: 720
+  fps: 15
+
+inference:
+  backend: cpu_mock      # hailo | cpu_mock | mock
+  model_path: null
+  confidence_threshold: 0.4
+
+api:
+  base_url: http://127.0.0.1:8000
+  device_id: device-local-01

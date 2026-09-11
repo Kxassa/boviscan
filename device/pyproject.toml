@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "livestock-weight-device"
+version = "0.1.0"
+description = "Edge pipeline for livestock-weight (camera → detect → track → estimate)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26,<3",
+  "pyyaml>=6.0,<7",
+  "httpx>=0.27,<1",
+]
+
+[project.optional-dependencies]
+pi = [
+  "picamera2>=0.3.19",
+]
+dev = [
+  "pytest>=8.0,<9",
+  "ruff>=0.6,<1",
+]
+
+[project.scripts]
+livestock-weight-device = "livestock_weight_device.__main__:main"
+livestock-weight-health = "livestock_weight_device.health.checks:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

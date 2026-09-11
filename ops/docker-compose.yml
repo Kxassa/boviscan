@@ -1,0 +1,24 @@
+services:
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      LW_API_DB_PATH: /data/livestock-weight.db
+      FIREBASE_AUTH_ENABLED: "false"
+    volumes:
+      - api_data:/data
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  api_data:
