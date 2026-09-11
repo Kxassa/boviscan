@@ -11,7 +11,10 @@ header {
   display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;
   justify-content: space-between; margin-bottom: 1.25rem;
 }
-h1 { font-size: 1.35rem; margin: 0; }
+.header-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.tabs { display: flex; gap: 0.35rem; }
+.tabs button.active { background: #2d6a2d; color: #fff; border-color: #2d6a2d; }
+h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.02em; }
 .card {
   background: #fff; border: 1px solid #d5e2d5; border-radius: 12px;
   padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 2px rgba(0,0,0,.04);
@@ -29,4 +32,11 @@ button, select {
   font: inherit; padding: 0.35rem 0.7rem; border-radius: 8px;
   border: 1px solid #b7cbb7; background: #eef6ee; cursor: pointer;
 }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
 .live-weight { font-size: 2rem; font-weight: 700; color: #2d6a2d; }
+.checklist { list-style: none; padding: 0; }
+.checklist li { margin: 0.45rem 0; }
+.checklist label { cursor: pointer; }
+.session-list ul { padding-left: 1.1rem; }
+.session-list a { color: #2d6a2d; }
+code { font-size: 0.85em; }

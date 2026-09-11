@@ -1,4 +1,4 @@
-# Example edge config for livestock-weight (copy to device.yaml)
+# Example edge config for BoviScan (copy to device.yaml)
 species_default: cattle
 pipeline_interval_s: 0.2
 
@@ -18,3 +18,4 @@ inference:
 api:
   base_url: http://127.0.0.1:8000
   device_id: device-local-01
+# Set LW_POST_API=true or pass --post-api to POST WeightEvents to api.base_url

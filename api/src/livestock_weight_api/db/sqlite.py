@@ -21,6 +21,12 @@ def init_db(conn: sqlite3.Connection | None = None) -> None:
     c = conn or get_connection()
     sql = MIGRATIONS.read_text(encoding="utf-8")
     c.executescript(sql)
+    # Lightweight additive migration for DBs created before status column
+    cols = {r[1] for r in c.execute("PRAGMA table_info(weighing_sessions)").fetchall()}
+    if "status" not in cols:
+        c.execute(
+            "ALTER TABLE weighing_sessions ADD COLUMN status TEXT NOT NULL DEFAULT 'active'"
+        )
     c.commit()
     if own:
         c.close()

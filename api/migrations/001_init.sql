@@ -1,4 +1,4 @@
--- livestock-weight companion schema (SQLite)
+-- BoviScan companion schema (SQLite)
 
 CREATE TABLE IF NOT EXISTS weight_events (
   id TEXT PRIMARY KEY,
@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS weighing_sessions (
   ended_at TEXT,
   event_count INTEGER NOT NULL DEFAULT 0,
   notes TEXT,
-  sync_state TEXT NOT NULL DEFAULT 'pending'
+  sync_state TEXT NOT NULL DEFAULT 'pending',
+  status TEXT NOT NULL DEFAULT 'active'
 );
 
 CREATE TABLE IF NOT EXISTS device_status (
@@ -49,4 +50,5 @@ CREATE TABLE IF NOT EXISTS sync_outbox (
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_ts ON weight_events(timestamp);
+CREATE INDEX IF NOT EXISTS idx_events_session ON weight_events(session_id);
 CREATE INDEX IF NOT EXISTS idx_outbox_type ON sync_outbox(entity_type);

@@ -23,8 +23,17 @@ def create_event(body: WeightEventIn, conn: sqlite3.Connection = Depends(get_db)
     if session_id is None:
         session_id = str(uuid4())
         conn.execute(
-            "INSERT OR IGNORE INTO weighing_sessions (id, device_id, started_at, event_count, sync_state) "
-            "VALUES (?, ?, ?, 0, 'pending')",
+            "INSERT OR IGNORE INTO weighing_sessions "
+            "(id, device_id, started_at, event_count, sync_state, status) "
+            "VALUES (?, ?, ?, 0, 'pending', 'active')",
+            (session_id, body.device_id, body.timestamp),
+        )
+    else:
+        # Ensure session row exists when device supplies session_id
+        conn.execute(
+            "INSERT OR IGNORE INTO weighing_sessions "
+            "(id, device_id, started_at, event_count, sync_state, status) "
+            "VALUES (?, ?, ?, 0, 'pending', 'active')",
             (session_id, body.device_id, body.timestamp),
         )
     conn.execute(
@@ -45,10 +54,10 @@ def create_event(body: WeightEventIn, conn: sqlite3.Connection = Depends(get_db)
         ),
     )
     conn.execute(
-        "UPDATE weighing_sessions SET event_count = event_count + 1, ended_at=? WHERE id=?",
-        (body.timestamp, session_id),
+        "UPDATE weighing_sessions SET event_count = event_count + 1 WHERE id=?",
+        (session_id,),
     )
-    # Enqueue session snapshot for Firestore sync
+    conn.commit()
     row = conn.execute("SELECT * FROM weighing_sessions WHERE id=?", (session_id,)).fetchone()
     if row:
         enqueue(
@@ -62,6 +71,7 @@ def create_event(body: WeightEventIn, conn: sqlite3.Connection = Depends(get_db)
                 "ended_at": row["ended_at"],
                 "event_count": row["event_count"],
                 "notes": row["notes"],
+                "status": row["status"] if "status" in row.keys() else "active",
                 "updated_at": datetime.now(timezone.utc).isoformat(),
             },
         )
@@ -75,13 +85,17 @@ def create_event(body: WeightEventIn, conn: sqlite3.Connection = Depends(get_db)
 def list_events(
     conn: sqlite3.Connection = Depends(get_db),
     device_id: str | None = None,
+    session_id: str | None = None,
     limit: int = Query(50, ge=1, le=500),
 ) -> list[WeightEventOut]:
-    q = "SELECT * FROM weight_events"
+    q = "SELECT * FROM weight_events WHERE 1=1"
     args: list = []
     if device_id:
-        q += " WHERE device_id=?"
+        q += " AND device_id=?"
         args.append(device_id)
+    if session_id:
+        q += " AND session_id=?"
+        args.append(session_id)
     q += " ORDER BY timestamp DESC LIMIT ?"
     args.append(limit)
     rows = conn.execute(q, args).fetchall()

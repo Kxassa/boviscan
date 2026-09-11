@@ -20,9 +20,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="livestock-weight API",
+    title="BoviScan API",
     version="0.1.0",
-    description="Local companion API with SQLite + Firestore sync stubs",
+    description="Local companion API (SQLite) with Firestore sync for BoviScan weighing sessions",
     lifespan=lifespan,
 )
 
@@ -41,7 +41,12 @@ app.include_router(sync.router)
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "service": "livestock-weight-api"}
+    return {
+        "ok": True,
+        "service": "boviscan-api",
+        "product": "BoviScan",
+        "project_hint": "boviscan-c2430",
+    }
 
 
 def run() -> None:

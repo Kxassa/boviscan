@@ -10,7 +10,9 @@ class Settings(BaseSettings):
 
     lw_api_db_path: str = str(Path("data") / "livestock-weight.db")
     firebase_auth_enabled: bool = False
-    google_cloud_project: str | None = None
+    # Default examples for BoviScan — override via env; never commit secrets
+    google_cloud_project: str | None = "boviscan-c2430"
+    firebase_project_id: str | None = "boviscan-c2430"
     firestore_emulator_host: str | None = None
     # GOOGLE_APPLICATION_CREDENTIALS is read by Google libs from the environment;
     # we never embed credential material here.

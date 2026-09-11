@@ -10,7 +10,7 @@ class WeightEventIn(BaseModel):
     device_id: str
     track_id: str
     timestamp: str
-    species: str = "unknown"
+    species: str = "cattle"
     estimated_weight_kg: float | None = None
     confidence: float = Field(ge=0, le=1)
     proxy_metrics: dict[str, Any] = Field(default_factory=dict)
@@ -39,6 +39,16 @@ class DeviceStatusOut(DeviceStatusIn):
     synced_at: str | None = None
 
 
+class SessionStartIn(BaseModel):
+    device_id: str
+    notes: str | None = None
+    id: str | None = None  # optional client-supplied id
+
+
+class SessionStopIn(BaseModel):
+    notes: str | None = None
+
+
 class WeighingSessionOut(BaseModel):
     id: str
     device_id: str
@@ -47,6 +57,7 @@ class WeighingSessionOut(BaseModel):
     event_count: int = 0
     notes: str | None = None
     sync_state: str = "pending"
+    status: str = "active"  # active | stopped
 
 
 class SyncResult(BaseModel):
@@ -54,4 +65,6 @@ class SyncResult(BaseModel):
     mode: str
     pushed_sessions: int = 0
     pushed_health: int = 0
+    retried: int = 0
+    failed: int = 0
     message: str
