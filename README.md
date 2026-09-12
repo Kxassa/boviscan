@@ -15,7 +15,7 @@ Repo / package path may still say `livestock-weight`; the product name is **Bovi
 | `api/` | FastAPI companion: events, sessions, status, Firestore sync, optional Auth |
 | `apps/web/` | React (Vite) UI — default locale **pt-BR** (console + calibração + login) |
 | `ml/` | Datasets schema, cattle YAML curves, eval MAE, Hailo HEF export notes, model card |
-| `ops/` | docker-compose (+ Firestore emulator profile), seed, **run_demo.sh**, **pi_bringup.sh**, **soak_device.sh** |
+| `ops/` | docker-compose (+ Firestore emulator profile), seed, **run_demo.sh**, **pre_pi_smoke.sh**, **pi_bringup.sh**, **soak_device.sh** |
 
 ## BOM (field device)
 
@@ -62,6 +62,17 @@ export LW_API_DB_PATH=/tmp/boviscan.db
 export GOOGLE_CLOUD_PROJECT=boviscan-c2430 FIREBASE_PROJECT_ID=boviscan-c2430
 uvicorn livestock_weight_api.main:app --port 8000
 ```
+
+
+## Pre-Pi smoke
+
+Full software gate **before** Pi / Hailo hardware. No camera HAT or cloud credentials required.
+
+```bash
+./ops/scripts/pre_pi_smoke.sh
+```
+
+Runs: device + API pytest (Hailo fallback covered by device tests), non-interactive `run_demo.sh`, soak (`cpu_mock`), Firestore dry-run, capture smoke (mock), and `apps/web` install/build/test. Exits non-zero if any step fails; prints a summary table.
 
 ## Phase 2 — enable Auth + Firestore + Pi bring-up
 

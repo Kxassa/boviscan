@@ -8,7 +8,7 @@ const dir = dirname(fileURLToPath(import.meta.url));
 const pt = JSON.parse(readFileSync(join(dir, "locales/pt-BR.json"), "utf8"));
 
 test("pt-BR is the ship catalog and has core keys", () => {
-  assert.equal(pt["app.title"], "livestock-weight");
+  assert.equal(pt["app.title"], "BoviScan");
   assert.ok(pt["live.disclaimer"]);
   assert.ok(pt["lang.note"].includes("português") || pt["lang.note"].includes("Brasil"));
 });
