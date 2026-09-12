@@ -114,3 +114,17 @@ def test_status_heartbeat(client):
     )
     assert r.status_code == 200
     assert len(client.get("/status").json()) >= 1
+
+
+def test_auth_and_sync_status_shape(client):
+    a = client.get("/auth/status")
+    assert a.status_code == 200
+    assert a.json()["enabled"] is False
+    s = client.get("/sync/status")
+    assert s.status_code == 200
+    body = s.json()
+    assert "weighing_sessions" in body["collections"]
+    assert "device_health" in body["collections"]
+    dry = client.post("/sync/run?dry_run=true")
+    assert dry.status_code == 200
+    assert dry.json()["mode"] in ("disabled", "stub", "firestore")

@@ -10,6 +10,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 
+from ..auth import optional_firebase_user
 from ..firestore_sync import enqueue
 from ..models import SessionStartIn, SessionStopIn, WeighingSessionOut
 
@@ -63,7 +64,9 @@ def _enqueue_session(conn: sqlite3.Connection, session_id: str) -> None:
 
 @router.post("/start", response_model=WeighingSessionOut)
 def start_session(
-    body: SessionStartIn, conn: sqlite3.Connection = Depends(get_db)
+    body: SessionStartIn,
+    conn: sqlite3.Connection = Depends(get_db),
+    _user: dict | None = Depends(optional_firebase_user),
 ) -> WeighingSessionOut:
     sid = body.id or str(uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -86,6 +89,7 @@ def stop_session(
     session_id: str,
     body: SessionStopIn | None = None,
     conn: sqlite3.Connection = Depends(get_db),
+    _user: dict | None = Depends(optional_firebase_user),
 ) -> WeighingSessionOut:
     row = conn.execute("SELECT * FROM weighing_sessions WHERE id=?", (session_id,)).fetchone()
     if not row:

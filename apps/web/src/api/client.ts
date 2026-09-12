@@ -1,3 +1,6 @@
+import { authEnabled } from "../auth/config";
+import { getIdToken } from "../auth/session";
+
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 export type WeightEvent = {
@@ -34,9 +37,18 @@ export type WeighingSession = {
   status: string;
 };
 
+function authHeaders(): HeadersInit {
+  const headers: Record<string, string> = {};
+  if (authEnabled()) {
+    const token = getIdToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 async function getJson<T>(path: string): Promise<T | null> {
   try {
-    const r = await fetch(`${BASE}${path}`);
+    const r = await fetch(`${BASE}${path}`, { headers: { ...authHeaders() } });
     if (!r.ok) return null;
     return (await r.json()) as T;
   } catch {
@@ -48,7 +60,7 @@ async function sendJson<T>(path: string, method: string, body?: unknown): Promis
   try {
     const r = await fetch(`${BASE}${path}`, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
     if (!r.ok) return null;
@@ -86,6 +98,10 @@ export function sessionCsvUrl(sessionId: string): string {
   return `${BASE}/sessions/${sessionId}/export.csv`;
 }
 
-export async function fetchHealth(): Promise<{ ok: boolean } | null> {
+export async function fetchHealth(): Promise<{ ok: boolean; auth_enabled?: boolean } | null> {
   return getJson("/health");
+}
+
+export async function fetchAuthStatus(): Promise<{ enabled: boolean } | null> {
+  return getJson("/auth/status");
 }

@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Query, Request
 
+from ..auth import optional_firebase_user
 from ..firestore_sync import enqueue
 from ..models import WeightEventIn, WeightEventOut
 
@@ -18,7 +19,11 @@ def get_db(request: Request) -> sqlite3.Connection:
 
 
 @router.post("", response_model=WeightEventOut)
-def create_event(body: WeightEventIn, conn: sqlite3.Connection = Depends(get_db)) -> WeightEventOut:
+def create_event(
+    body: WeightEventIn,
+    conn: sqlite3.Connection = Depends(get_db),
+    _user: dict | None = Depends(optional_firebase_user),
+) -> WeightEventOut:
     session_id = body.session_id
     if session_id is None:
         session_id = str(uuid4())

@@ -1,0 +1,46 @@
+# Cattle area/height → kg research proxy curve (configurable).
+# RESEARCH / HEURISTIC — not validated for trade or veterinary use.
+# Replace anchors after field studies; keep research_proxy labels in UI/API.
+
+method: cattle_area_height_table_v0
+species: cattle
+research_proxy: true
+disclaimer: >
+  Heuristic research proxy only — not certified weight.
+  Requires herd-specific calibration before operational trust.
+height_blend: 0.3  # fraction of height-based estimate when both area + height available
+
+# Sorted by area_m2 ascending
+anchors:
+  - area_m2: 0.40
+    weight_kg: 180.0
+    height_m: 0.95
+    note: calf / small
+  - area_m2: 0.60
+    weight_kg: 260.0
+    height_m: 1.05
+    note: yearling light
+  - area_m2: 0.80
+    weight_kg: 340.0
+    height_m: 1.15
+    note: yearling
+  - area_m2: 1.00
+    weight_kg: 420.0
+    height_m: 1.25
+    note: adult light
+  - area_m2: 1.20
+    weight_kg: 500.0
+    height_m: 1.35
+    note: adult medium
+  - area_m2: 1.40
+    weight_kg: 580.0
+    height_m: 1.40
+    note: adult heavy
+  - area_m2: 1.60
+    weight_kg: 660.0
+    height_m: 1.45
+    note: large adult
+  - area_m2: 1.80
+    weight_kg: 740.0
+    height_m: 1.50
+    note: very large

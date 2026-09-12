@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Request
 
+from ..auth import optional_firebase_user
 from ..firestore_sync import enqueue
 from ..models import DeviceStatusIn, DeviceStatusOut
 
@@ -16,7 +17,11 @@ def get_db(request: Request) -> sqlite3.Connection:
 
 
 @router.put("", response_model=DeviceStatusOut)
-def put_status(body: DeviceStatusIn, conn: sqlite3.Connection = Depends(get_db)) -> DeviceStatusOut:
+def put_status(
+    body: DeviceStatusIn,
+    conn: sqlite3.Connection = Depends(get_db),
+    _user: dict | None = Depends(optional_firebase_user),
+) -> DeviceStatusOut:
     conn.execute(
         "INSERT OR REPLACE INTO device_status "
         "(device_id, online, camera_ok, inference_backend, pipeline_state, "

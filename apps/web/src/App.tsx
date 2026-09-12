@@ -8,10 +8,14 @@ import {
   type DeviceStatus,
   type WeighingSession,
 } from "./api/client";
+import { authEnabled, readFirebaseConfig } from "./auth/config";
+import { signOutFirebase } from "./auth/firebase";
+import { getIdToken, getUserEmail, subscribeAuth } from "./auth/session";
 import { CalibrationChecklist } from "./components/CalibrationChecklist";
 import { DeviceStatusCard } from "./components/DeviceStatusCard";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LiveWeight } from "./components/LiveWeight";
+import { LoginScreen } from "./components/LoginScreen";
 import { SessionControls } from "./components/SessionControls";
 import { SessionHistory } from "./components/SessionHistory";
 import { useLiveWeightFeed } from "./hooks/useLiveWeightFeed";
@@ -27,6 +31,11 @@ export default function App() {
   const [active, setActive] = useState<WeighingSession | null>(null);
   const [busy, setBusy] = useState(false);
   const [apiOk, setApiOk] = useState(false);
+  const [authTick, setAuthTick] = useState(0);
+
+  const needLogin = authEnabled() && !!readFirebaseConfig() && !getIdToken();
+
+  useEffect(() => subscribeAuth(() => setAuthTick((n) => n + 1)), []);
 
   const sessionId = active?.id ?? null;
   const { events, latestKg } = useLiveWeightFeed(sessionId);
@@ -42,13 +51,14 @@ export default function App() {
     setSessions(sess);
     const open = sess.find((s) => s.status === "active" && !s.ended_at);
     if (open) setActive(open);
-  }, []);
+  }, [authTick]);
 
   useEffect(() => {
+    if (needLogin) return;
     refreshMeta();
     const id = setInterval(refreshMeta, 5000);
     return () => clearInterval(id);
-  }, [refreshMeta]);
+  }, [refreshMeta, needLogin]);
 
   const onStart = async () => {
     setBusy(true);
@@ -69,6 +79,21 @@ export default function App() {
 
   const latestConf =
     events.find((e) => e.estimated_weight_kg != null)?.confidence ?? null;
+
+  if (needLogin) {
+    return (
+      <div className="app">
+        <header>
+          <div>
+            <h1>{t("app.title", locale)}</h1>
+            <div className="muted">{t("app.subtitle", locale)}</div>
+          </div>
+          <LanguageSwitcher locale={locale} onChange={setLocale} />
+        </header>
+        <LoginScreen locale={locale} onAuthenticated={() => setAuthTick((n) => n + 1)} />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -94,6 +119,14 @@ export default function App() {
               {t("nav.calibration", locale)}
             </button>
           </nav>
+          {authEnabled() && getUserEmail() && (
+            <span className="pill">{getUserEmail()}</span>
+          )}
+          {authEnabled() && getIdToken() && (
+            <button type="button" onClick={() => signOutFirebase()}>
+              {t("auth.signOut", locale)}
+            </button>
+          )}
           <LanguageSwitcher locale={locale} onChange={setLocale} />
         </div>
       </header>

@@ -106,3 +106,58 @@ def test_pipeline_posts_success_mocked():
         assert body["session_id"] == "sess-ok"
         assert body["estimated_weight_kg"] is not None
         assert "proxy_metrics" in body
+
+
+def test_cattle_proxy_loads_yaml():
+    from livestock_weight_device.calibration.cattle_proxy import (
+        estimate_cattle_weight_kg,
+        get_cattle_table,
+        load_cattle_proxy_table,
+    )
+
+    get_cattle_table.cache_clear() if hasattr(get_cattle_table, "cache_clear") else None
+    # Invalidate lru on underlying cache
+    from livestock_weight_device.calibration import cattle_proxy as cp
+
+    cp._cached_table.cache_clear()
+    table = load_cattle_proxy_table()
+    assert len(table) >= 4
+    r = estimate_cattle_weight_kg(1.0)
+    assert r["research_proxy"] is True
+    assert r["weight_kg"] == 420.0
+
+
+def test_cpu_mock_motion_detects_moving_blob():
+    import numpy as np
+    from livestock_weight_device.inference.mock import CPUMockBackend
+
+    backend = CPUMockBackend(threshold=100, min_area=500, motion_threshold=10)
+    backend.load()
+    # Frame 1: empty-ish
+    f1 = np.zeros((240, 320, 3), dtype=np.uint8) + 40
+    backend.predict(f1)  # establish previous frame (often empty)
+    # Frame 2: bright blob appears (motion + bright)
+    f2 = f1.copy()
+    f2[80:160, 100:220] = 200
+    dets = backend.predict(f2)
+    assert len(dets) == 1
+    assert dets[0].label == "livestock"
+    assert dets[0].x2 > dets[0].x1
+
+
+def test_capture_smoke_mock(tmp_path):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    script = Path(__file__).resolve().parents[1] / "scripts" / "capture_smoke.py"
+    out = tmp_path / "still.ppm"
+    r = subprocess.run(
+        [sys.executable, str(script), "--force-mock", "--out", str(out), "--width", "64", "--height", "48"],
+        capture_output=True,
+        text=True,
+        cwd=str(Path(__file__).resolve().parents[1]),
+    )
+    assert r.returncode == 0, r.stderr + r.stdout
+    # either .ppm written or path mentioned
+    assert "ok source=mock" in r.stdout

@@ -8,6 +8,10 @@ services:
     environment:
       LW_API_DB_PATH: /data/livestock-weight.db
       FIREBASE_AUTH_ENABLED: "false"
+      GOOGLE_CLOUD_PROJECT: boviscan-c2430
+      FIREBASE_PROJECT_ID: boviscan-c2430
+      # Uncomment when using the emulator profile:
+      # FIRESTORE_EMULATOR_HOST: firestore-emulator:8080
     volumes:
       - api_data:/data
 
@@ -19,6 +23,23 @@ services:
       - "5173:80"
     depends_on:
       - api
+
+  # Optional Firestore emulator — start with:
+  #   docker compose -f ops/docker-compose.yml --profile emulator up firestore-emulator
+  # Then: export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+  firestore-emulator:
+    profiles: ["emulator"]
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    command:
+      - gcloud
+      - beta
+      - emulators
+      - firestore
+      - start
+      - --host-port=0.0.0.0:8080
+      - --project=boviscan-c2430
+    ports:
+      - "8080:8080"
 
 volumes:
   api_data:

@@ -1,0 +1,6 @@
+image_id,scale_kg,bbox,date,farm_id
+cattle_syn_001,420.0,"320,200,960,520",2026-09-01,farm_demo_a
+cattle_syn_002,385.5,"280,180,900,500",2026-09-01,farm_demo_a
+cattle_syn_003,510.0,"300,190,980,540",2026-09-02,farm_demo_b
+cattle_syn_004,290.0,"350,220,820,480",2026-09-02,farm_demo_b
+cattle_syn_005,455.0,"310,210,940,510",2026-09-03,farm_demo_a

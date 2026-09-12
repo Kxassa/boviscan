@@ -23,6 +23,12 @@ pytest -q
 
 Or use `../ops/scripts/run_demo.sh`.
 
+## Pi 5 bring-up
+
+Run `../ops/scripts/pi_bringup.sh` or `scripts/pi_bringup.sh`.
+Capture smoke: `python scripts/capture_smoke.py --out /tmp/boviscan-still.jpg`.
+Details: `docs/HARDWARE.md`.
+
 ## Pi 5 bring-up (summary)
 
 1. Raspberry Pi OS (64-bit), enable camera via `raspi-config` / libcamera
@@ -35,7 +41,7 @@ Or use `../ops/scripts/run_demo.sh`.
 
 ## Weight proxy
 
-`calibration/cattle_proxy.py` — heuristic area (± height) → kg table. Marked **research_proxy**; not for trade settlement.
+`calibration/cattle_proxy.py` loads `config/cattle_proxy.yaml` (or `ml/calibration/cattle_proxy.yaml`). Marked **research_proxy**; not for trade settlement.
 
 ## Interfaces
 

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import sqlite3
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 
-from ..firestore_sync import run_sync, sync_mode, _project_id
+from ..auth import optional_firebase_user
+from ..firestore_sync import run_sync, status_snapshot
 from ..models import SyncResult
 
 router = APIRouter(prefix="/sync", tags=["sync"])
@@ -15,8 +16,12 @@ def get_db(request: Request) -> sqlite3.Connection:
 
 
 @router.post("/run", response_model=SyncResult)
-def sync_run(conn: sqlite3.Connection = Depends(get_db)) -> SyncResult:
-    report = run_sync(conn)
+def sync_run(
+    conn: sqlite3.Connection = Depends(get_db),
+    dry_run: bool = Query(False, description="Report pending without writing"),
+    _user: dict | None = Depends(optional_firebase_user),
+) -> SyncResult:
+    report = run_sync(conn, dry_run=dry_run)
     return SyncResult(
         ok=report.ok,
         mode=report.mode,
@@ -25,19 +30,12 @@ def sync_run(conn: sqlite3.Connection = Depends(get_db)) -> SyncResult:
         retried=report.retried,
         failed=report.failed,
         message=report.message,
+        pending=report.pending,
+        collections=report.collections,
     )
 
 
 @router.get("/status")
-def sync_status() -> dict:
-    """Describe current sync configuration (no secrets)."""
-    return {
-        "mode": sync_mode(),
-        "project_id": _project_id() or "boviscan-c2430 (default example)",
-        "emulator": bool(__import__("os").environ.get("FIRESTORE_EMULATOR_HOST")),
-        "docs": (
-            "Set GOOGLE_CLOUD_PROJECT=boviscan-c2430 and either "
-            "GOOGLE_APPLICATION_CREDENTIALS or FIRESTORE_EMULATOR_HOST. "
-            "Install optional extra: pip install -e '.[firestore]'."
-        ),
-    }
+def sync_status(conn: sqlite3.Connection = Depends(get_db)) -> dict:
+    """Describe current sync configuration + outbox (no secrets)."""
+    return status_snapshot(conn)

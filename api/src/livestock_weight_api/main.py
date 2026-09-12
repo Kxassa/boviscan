@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .db.sqlite import get_connection, init_db
 from .routers import events, sessions, status, sync
+from .routers import auth_status
 from .settings import settings
 
 
@@ -37,15 +38,21 @@ app.include_router(events.router)
 app.include_router(status.router)
 app.include_router(sessions.router)
 app.include_router(sync.router)
+app.include_router(auth_status.router)
 
 
 @app.get("/health")
 def health() -> dict:
+    from .auth import auth_status
+    from .firestore_sync import sync_mode
+
     return {
         "ok": True,
         "service": "boviscan-api",
         "product": "BoviScan",
         "project_hint": "boviscan-c2430",
+        "auth_enabled": auth_status()["enabled"],
+        "sync_mode": sync_mode(),
     }
 
 

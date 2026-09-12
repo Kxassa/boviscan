@@ -68,3 +68,5 @@ class SyncResult(BaseModel):
     retried: int = 0
     failed: int = 0
     message: str
+    pending: int = 0
+    collections: dict[str, str] = Field(default_factory=dict)

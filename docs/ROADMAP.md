@@ -12,7 +12,7 @@ Phased plan. Accuracy claims only after validated field studies. Farmer UI: **pt
 - [x] Web skeleton; default locale **pt-BR**
 - [x] Docker Compose + CI smoke for mocks
 
-## Phase 1 — Field bring-up + mock E2E (current)
+## Phase 1 — Field bring-up + mock E2E
 
 - [x] Device pipeline POSTs weight events to companion API (configurable base URL)
 - [x] Cattle calibration table (height/area → kg) labeled heuristic/research proxy
@@ -24,16 +24,23 @@ Phased plan. Accuracy claims only after validated field studies. Farmer UI: **pt
 - [x] Calibration checklist page (3 m height, FOV, reference object) in pt-BR
 - [x] `ops/scripts/run_demo.sh` mock E2E
 - [x] Smoke tests for sessions + pipeline→API posting
-- [ ] Pi 5 + Cam Module 3 capture verified with picamera2 (hardware)
-- [ ] Basic detection model on CPU beyond blob mock; optional Hailo HEF when available
-- [ ] Firebase Auth wired for companion login
+- [x] Pi bring-up script + HARDWARE.md step-by-step + capture smoke (mock fallback)
+- [x] CPU detection improved (motion/blob; optional OpenCV); Hailo stub retained
+- [x] Firebase Auth wired for companion login (optional via env + pt-BR login screen)
+- [ ] Pi 5 + Cam Module 3 capture verified on real hardware (field)
 
-## Phase 2 — Cloud sync + species calibration
+## Phase 2 — Cloud sync + species calibration (in progress)
 
-- [ ] Production Firestore sync for sessions + device health (credentials + soak)
-- [ ] Collect labeled datasets per species (see `ml/datasets/`)
-- [ ] Body-size proxy → weight curves with holdout eval
-- [ ] MODEL_CARD.md filled with real metrics (no fabrication)
+- [x] Firestore sync hardened: backoff retries, richer `/sync/status`, documented collections
+- [x] Optional Firestore emulator docker-compose profile
+- [x] Integration/dry-run tests proving sync path without real GCP
+- [x] Datasets layout cattle + sheep/goat placeholders; CSV schema
+- [x] Cattle proxy curves as configurable YAML; research labels kept
+- [x] Eval script: proxy vs scale_kg → MAE (MODEL_CARD describes how to fill; no fabricated metrics)
+- [x] Docs: Auth + Firestore emulator + Pi bring-up in README
+- [ ] Production Firestore soak with real credentials on boviscan-c2430
+- [ ] Collect labeled field datasets per species
+- [ ] Holdout eval on real scale weights; fill MODEL_CARD with measured MAE only
 
 ## Phase 3 — Hailo acceleration
 

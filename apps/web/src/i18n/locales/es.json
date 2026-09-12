@@ -45,5 +45,19 @@
   "lang.note": "v1 UI del productor solo pt-BR.",
   "species.cattle": "Bovino",
   "species.pig": "Porcino",
-  "species.unknown": "Desconocido"
+  "species.unknown": "Desconocido",
+  "auth.heading": "Entrar a BoviScan",
+  "auth.intro": "Correo/contraseña vía Firebase Auth.",
+  "auth.email": "Correo",
+  "auth.password": "Contraseña",
+  "auth.signIn": "Entrar",
+  "auth.signUp": "Crear cuenta",
+  "auth.signOut": "Salir",
+  "auth.needAccount": "Crear cuenta",
+  "auth.haveAccount": "Ya tengo cuenta",
+  "auth.google": "Entrar con Google",
+  "auth.googleStubButton": "Google (no configurado)",
+  "auth.googleStub": "Google Sign-In no está habilitado. Configure VITE_FIREBASE_GOOGLE_ENABLED=true.",
+  "auth.configMissing": "Faltan VITE_FIREBASE_API_KEY / VITE_FIREBASE_AUTH_DOMAIN.",
+  "auth.project": "Proyecto Firebase"
 }

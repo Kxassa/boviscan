@@ -45,5 +45,19 @@
   "lang.note": "v1 farmer UI is pt-BR only.",
   "species.cattle": "Cattle",
   "species.pig": "Pig",
-  "species.unknown": "Unknown"
+  "species.unknown": "Unknown",
+  "auth.heading": "Sign in to BoviScan",
+  "auth.intro": "Email/password via Firebase Auth. When API auth is off, the console works without login.",
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.signIn": "Sign in",
+  "auth.signUp": "Create account",
+  "auth.signOut": "Sign out",
+  "auth.needAccount": "Create account",
+  "auth.haveAccount": "I have an account",
+  "auth.google": "Sign in with Google",
+  "auth.googleStubButton": "Google (not configured)",
+  "auth.googleStub": "Google Sign-In is not enabled. Set VITE_FIREBASE_GOOGLE_ENABLED=true and configure OAuth in Firebase Console (boviscan-c2430).",
+  "auth.configMissing": "Auth enabled but missing VITE_FIREBASE_API_KEY / VITE_FIREBASE_AUTH_DOMAIN. See docs/AUTH.md.",
+  "auth.project": "Firebase project"
 }

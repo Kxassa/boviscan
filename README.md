@@ -2,7 +2,7 @@
 
 **BoviScan** estimates livestock weight from a **fixed overhead camera** (not a physical scale). Edge runtime targets **Raspberry Pi 5 (8 GB) + Hailo-8 HAT (~26 TOPS) + Camera Module 3** mounted ~**3 m** above ground. Offline-first SQLite on the edge; weighing sessions and device health sync to **Google Cloud Firestore** (Firebase project **`boviscan-c2430`**) when configured. Auth via **Firebase Auth**. Farmer-facing UI ships **pt-BR only** in v1.
 
-> Early ML is placeholder/research. Visual weight uses a **cattle height/area → kg heuristic table** labeled as a research proxy. **No fabricated accuracy claims.**
+> Early ML is placeholder/research. Visual weight uses a **cattle height/area → kg heuristic table** (YAML-configurable) labeled as a research proxy. **No fabricated accuracy claims.**
 
 Repo / package path may still say `livestock-weight`; the product name is **BoviScan**.
 
@@ -10,12 +10,12 @@ Repo / package path may still say `livestock-weight`; the product name is **Bovi
 
 | Path | Role |
 |------|------|
-| `docs/` | Product, architecture (Mermaid), hardware, data model, roadmap |
+| `docs/` | Product, architecture, hardware, AUTH, data model, roadmap |
 | `device/` | Python edge: capture, inference stubs, pipeline, calibration, health |
-| `api/` | FastAPI companion: events, sessions (start/stop/CSV), status, Firestore sync |
-| `apps/web/` | React (Vite) UI — default locale **pt-BR** (console + calibração) |
-| `ml/` | Dataset conventions, train/eval placeholders, model card, HEF notes |
-| `ops/` | docker-compose, seed + **run_demo.sh**, CI mirror |
+| `api/` | FastAPI companion: events, sessions, status, Firestore sync, optional Auth |
+| `apps/web/` | React (Vite) UI — default locale **pt-BR** (console + calibração + login) |
+| `ml/` | Datasets schema, cattle YAML curves, eval MAE script, model card |
+| `ops/` | docker-compose (+ Firestore emulator profile), seed, **run_demo.sh**, **pi_bringup.sh** |
 
 ## BOM (field device)
 
@@ -33,11 +33,9 @@ cd /workspace/livestock-weight
 ./ops/scripts/run_demo.sh 40
 ```
 
-This starts the companion API, creates a weighing session, runs the mock device pipeline (POST weight events), prints sample events / sync mode, and leaves the API up. In another terminal:
-
 ```bash
 cd apps/web && npm install && npm run dev
-# Open http://127.0.0.1:5173 — console de pesagem + checklist de calibração (pt-BR)
+# Open http://127.0.0.1:5173 — console de pesagem + checklist (pt-BR)
 ```
 
 ### Manual pieces
@@ -63,33 +61,68 @@ pip install -e ".[dev]"
 export LW_API_DB_PATH=/tmp/boviscan.db
 export GOOGLE_CLOUD_PROJECT=boviscan-c2430 FIREBASE_PROJECT_ID=boviscan-c2430
 uvicorn livestock_weight_api.main:app --port 8000
-# POST /sessions/start | GET /sessions/{id}/export.csv | POST /sync/run
 ```
 
-**Firestore emulator (optional):**
+## Phase 2 — enable Auth + Firestore + Pi bring-up
+
+### Firebase Auth (optional)
+
+See **`docs/AUTH.md`**. Short version:
 
 ```bash
+# API
+export FIREBASE_AUTH_ENABLED=true
+export FIREBASE_PROJECT_ID=boviscan-c2430
+export GOOGLE_APPLICATION_CREDENTIALS=/path/outside/repo/sa.json
+pip install -e '.[firestore]'   # from api/
+
+# Web (apps/web/.env.local)
+VITE_FIREBASE_AUTH_ENABLED=true
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=boviscan-c2430.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=boviscan-c2430
+```
+
+When auth is disabled (default), API and web work as in Phase 1. Google Sign-In is clearly stubbed until `VITE_FIREBASE_GOOGLE_ENABLED=true`.
+
+### Firestore sync / emulator
+
+Collections: **`weighing_sessions`**, **`device_health`**. Status: `GET /sync/status`. Dry-run: `POST /sync/run?dry_run=true`.
+
+```bash
+# Optional emulator via compose profile
+docker compose -f ops/docker-compose.yml --profile emulator up firestore-emulator
 export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 export GOOGLE_CLOUD_PROJECT=boviscan-c2430
-pip install -e ".[firestore]"
-# then POST /sync/run → mode=firestore against emulator
+cd api && pip install -e '.[firestore]'
+curl -X POST 'http://127.0.0.1:8000/sync/run'
 ```
 
 Never commit `GOOGLE_APPLICATION_CREDENTIALS` JSON.
 
-## Pi bring-up (high level)
+### Pi 5 bring-up
 
-See `device/README.md` and `docs/HARDWARE.md`. Set `camera.height_m: 3.0`, use picamera2, optional Hailo HEF (documented in `ml/notes/hailo_hef_export.md`).
+```bash
+./ops/scripts/pi_bringup.sh
+python device/scripts/capture_smoke.py --out /tmp/boviscan-still.jpg
+# Full steps: docs/HARDWARE.md
+```
+
+### Species calibration / eval
+
+- Curves: `ml/calibration/cattle_proxy.yaml` (also `device/config/cattle_proxy.yaml`)
+- Datasets: `ml/datasets/cattle|sheep|goat/` — CSV schema `image_id,scale_kg,bbox,date,farm_id`
+- MAE: `python ml/eval/eval_proxy_mae.py ml/eval/sample_proxy_vs_scale.csv`
 
 ## How pieces relate
 
 ```
-Camera/Mock → detect → track IDs → cattle research proxy (kg)
-                                 → WeightEvent POST → companion API (SQLite)
-                                                      ↓ outbox retry
-                                              Firestore (boviscan-c2430) when configured
-                                                      ↓
-                                              apps/web BoviScan (pt-BR)
+Camera/Mock → detect (motion/blob|Hailo stub) → track → cattle YAML research proxy (kg)
+                                                    → WeightEvent POST → companion API (SQLite)
+                                                                         ↓ outbox + backoff
+                                                                 Firestore (boviscan-c2430)
+                                                                         ↓
+                                                                 apps/web BoviScan (pt-BR)
 ```
 
 ## Product

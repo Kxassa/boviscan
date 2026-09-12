@@ -19,3 +19,5 @@ ml/datasets/processed/
 .mypy_cache/
 GOOGLE_APPLICATION_CREDENTIALS*
 *-service-account*.json
+ml/datasets/**/images/
+apps/web/.env.local

@@ -1,0 +1,13 @@
+name: boviscan-cattle-v0
+species: cattle
+status: placeholder_synthetic
+notes: >
+  Sample rows in labels.csv are SYNTHETIC for schema/wiring only.
+  Replace with consented field captures before any MODEL_CARD metrics.
+schema:
+  - image_id
+  - scale_kg
+  - bbox
+  - date
+  - farm_id
+license: internal-research

@@ -48,5 +48,19 @@
   "lang.note": "v1: interface do produtor somente em português (Brasil).",
   "species.cattle": "Bovino",
   "species.pig": "Suíno",
-  "species.unknown": "Desconhecido"
+  "species.unknown": "Desconhecido",
+  "auth.heading": "Entrar no BoviScan",
+  "auth.intro": "Use e-mail e senha (Firebase Auth). Com auth desligado na API, a console funciona sem login.",
+  "auth.email": "E-mail",
+  "auth.password": "Senha",
+  "auth.signIn": "Entrar",
+  "auth.signUp": "Criar conta",
+  "auth.signOut": "Sair",
+  "auth.needAccount": "Criar conta",
+  "auth.haveAccount": "Já tenho conta",
+  "auth.google": "Entrar com Google",
+  "auth.googleStubButton": "Google (não configurado)",
+  "auth.googleStub": "Google Sign-In ainda não está habilitado neste projeto. Defina VITE_FIREBASE_GOOGLE_ENABLED=true e configure o provedor OAuth no Firebase Console (boviscan-c2430).",
+  "auth.configMissing": "Auth habilitado, mas faltam VITE_FIREBASE_API_KEY / VITE_FIREBASE_AUTH_DOMAIN. Veja docs/AUTH.md.",
+  "auth.project": "Projeto Firebase"
 }
