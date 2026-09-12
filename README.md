@@ -10,7 +10,7 @@ Repo / package path may still say `livestock-weight`; the product name is **Bovi
 
 | Path | Role |
 |------|------|
-| `docs/` | Product, architecture, hardware, AUTH, Firestore soak, discovery, OTA, data model, roadmap |
+| `docs/` | Product, architecture, hardware, AUTH, Firestore soak, discovery, OTA, data model, **LIS integration**, roadmap |
 | `device/` | Python edge: capture, inference stubs, pipeline, calibration, health |
 | `api/` | FastAPI companion: events, sessions, status, Firestore sync, optional Auth |
 | `apps/web/` | React (Vite) UI — default locale **pt-BR** (console + calibração + login) |
@@ -196,6 +196,17 @@ Camera/Mock → detect (motion/blob|Hailo HEF / cpu fallback) → track → catt
                                                                          ↓
                                                                  apps/web BoviScan (pt-BR)
 ```
+
+
+## LIS integration (visual → registerWeighing)
+
+BoviScan does **not** share Firebase with LIS. Visual estimates can be forwarded to LIS:
+
+- Contract: **`docs/INTEGRATION_LIS.md`** (diagram, schema, Firebase boundaries, `X-Device-Token`)
+- Companion stub: `POST /bridge/lis/estimated-weight` → outbound `POST {LIS_INGEST_URL}/api/boviscan/weight-events`
+- Env: `LIS_INGEST_URL`, `LIS_DEVICE_TOKEN` (or `LIS_INGEST_TOKEN`); unset = local stub queue
+- `animalId` optional (m-bio); unmatched animals are **LIS-side pending**
+- `metodo` always `estimativa_visual`; real scale weight stays in LIS
 
 ## Product
 

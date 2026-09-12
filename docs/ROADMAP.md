@@ -61,6 +61,7 @@ Phased plan. Accuracy claims only after validated field studies. Farmer UI: **pt
 - [x] Richer farm reports: `/reports/farm` + CSV; web Relatórios (pt-BR) with summary cards
 - [x] Expanded session CSV (disclaimer + summary + height proxy column)
 - [x] Mock mode auto-registers `device-local-01` on API start / demo
+- [x] LIS integration contract + bridge stub (`docs/INTEGRATION_LIS.md`, `POST /bridge/lis/estimated-weight`)
 
 ## Explicit non-goals (near term)
 

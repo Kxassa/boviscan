@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db.sqlite import get_connection, init_db
-from .routers import auth_status, devices, events, reports, sessions, status, sync
+from .routers import auth_status, bridge, devices, events, reports, sessions, status, sync
 from .routers.devices import register_mock_local_device
 from .settings import settings
 
@@ -50,6 +50,7 @@ app.include_router(sync.router)
 app.include_router(auth_status.router)
 app.include_router(reports.router)
 app.include_router(devices.router)
+app.include_router(bridge.router)
 
 
 @app.get("/health")

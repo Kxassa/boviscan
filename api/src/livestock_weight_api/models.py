@@ -70,3 +70,37 @@ class SyncResult(BaseModel):
     message: str
     pending: int = 0
     collections: dict[str, str] = Field(default_factory=dict)
+
+
+
+class LisEstimatedWeightIn(BaseModel):
+    """Inbound bridge payload (snake_case). Maps to LIS camelCase wire body."""
+
+    farm_id: str
+    device_id: str
+    idempotency_key: str  # = WeightEvent.id
+    peso_kg: float = Field(gt=0)
+    confidence: float = Field(ge=0, le=1)
+    captured_at: str  # ISO-8601
+    animal_id: str | None = None
+    m_bio_match: dict[str, Any] | None = None
+    session_id: str | None = None
+    track_id: str | None = None
+    proxy_metrics: dict[str, Any] | None = None
+    species: str | None = "cattle"
+    calibration_id: str | None = None
+
+
+class LisEstimatedWeightOut(BaseModel):
+    ok: bool
+    mode: str  # stub | forwarded | queued
+    outbox_id: str
+    farm_id: str
+    device_id: str
+    idempotency_key: str
+    peso_kg: float
+    animal_id: str | None = None
+    metodo: str = "estimativa_visual"
+    outbound: dict[str, Any] = Field(default_factory=dict)
+    message: str
+    http_status: int | None = None

@@ -33,6 +33,7 @@ OpenAPI: http://127.0.0.1:8000/docs
 | PUT/GET | `/status` | Device heartbeat |
 | POST | `/sync/run` | Drain outbox (`?dry_run=true` supported) |
 | GET | `/sync/status` | Mode, collections, pending, errors |
+| POST | `/bridge/lis/estimated-weight` | LIS visual-weight bridge (stub/queue) |
 
 When `FIREBASE_AUTH_ENABLED=true`, mutating routes require `Authorization: Bearer <Firebase ID token>`.
 
@@ -46,6 +47,8 @@ When `FIREBASE_AUTH_ENABLED=true`, mutating routes require `Authorization: Beare
 | `FIRESTORE_EMULATOR_HOST` | e.g. `127.0.0.1:8080` |
 | `FIREBASE_AUTH_EMULATOR_HOST` | e.g. `127.0.0.1:9099` |
 | `GOOGLE_APPLICATION_CREDENTIALS` | SA JSON **outside repo** |
+| `LIS_INGEST_URL` | LIS base URL (optional; unset = stub) |
+| `LIS_DEVICE_TOKEN` / `LIS_INGEST_TOKEN` | `X-Device-Token` for LIS ingest |
 
 ### Firestore collections
 
@@ -70,3 +73,14 @@ curl -X POST 'http://127.0.0.1:8000/sync/run?dry_run=true'
 - `GET /reports/farm/export.csv` — downloadable CSV with research disclaimer
 - `GET /devices` — LAN registry (last_seen, health); mock auto-registers `device-local-01`
 - `POST /devices/register` · `POST /devices/beacon`
+
+
+## LIS bridge (stub)
+
+See **`docs/INTEGRATION_LIS.md`**.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| POST | `/bridge/lis/estimated-weight` | Validate + queue; outbound stub or `POST {LIS}/api/boviscan/weight-events` |
+
+Env: `LIS_INGEST_URL` (LIS base URL), `LIS_DEVICE_TOKEN` (or `LIS_INGEST_TOKEN`). Header to LIS: `X-Device-Token`. `metodo` forced to `estimativa_visual`.
