@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Request
 from ..auth import optional_firebase_user
 from ..firestore_sync import enqueue
 from ..models import DeviceStatusIn, DeviceStatusOut
+from .devices import DeviceRegisterIn, upsert_device
 
 router = APIRouter(prefix="/status", tags=["status"])
 
@@ -42,6 +43,23 @@ def put_status(
     payload = body.model_dump()
     payload["updated_at"] = datetime.now(timezone.utc).isoformat()
     enqueue(conn, "device_health", body.device_id, payload)
+    # Keep /devices registry in sync with heartbeats
+    upsert_device(
+        conn,
+        DeviceRegisterIn(
+            device_id=body.device_id,
+            version=body.version,
+            source="heartbeat",
+            online=body.online,
+            health={
+                "camera_ok": body.camera_ok,
+                "inference_backend": body.inference_backend,
+                "pipeline_state": body.pipeline_state,
+                "cpu_temp_c": body.cpu_temp_c,
+                "disk_free_gb": body.disk_free_gb,
+            },
+        ),
+    )
     return DeviceStatusOut(**body.model_dump(), synced_at=None)
 
 

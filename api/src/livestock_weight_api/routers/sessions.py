@@ -159,8 +159,31 @@ def export_session_csv(session_id: str, conn: sqlite3.Connection = Depends(get_d
         "SELECT * FROM weight_events WHERE session_id=? ORDER BY timestamp ASC",
         (session_id,),
     ).fetchall()
+    weights = [e["estimated_weight_kg"] for e in events if e["estimated_weight_kg"] is not None]
+    avg_kg = (sum(weights) / len(weights)) if weights else None
     buf = io.StringIO()
     writer = csv.writer(buf)
+    writer.writerow(["# BoviScan session export — research proxy weights"])
+    writer.writerow(
+        [
+            "# disclaimer",
+            "Estimativas visuais (proxy de pesquisa). Não use como peso certificado ou comercial.",
+        ]
+    )
+    writer.writerow(
+        [
+            "# session",
+            row["id"],
+            row["device_id"],
+            row["started_at"],
+            row["ended_at"] or "",
+            f"event_count={row['event_count']}",
+            f"avg_kg={avg_kg if avg_kg is not None else ''}",
+            f"min_kg={min(weights) if weights else ''}",
+            f"max_kg={max(weights) if weights else ''}",
+        ]
+    )
+    writer.writerow([])
     writer.writerow(
         [
             "event_id",
@@ -174,8 +197,10 @@ def export_session_csv(session_id: str, conn: sqlite3.Connection = Depends(get_d
             "area_m2",
             "length_m",
             "width_m",
+            "height_proxy_m",
             "research_proxy",
             "calibration_id",
+            "notes",
         ]
     )
     for e in events:
@@ -193,8 +218,10 @@ def export_session_csv(session_id: str, conn: sqlite3.Connection = Depends(get_d
                 pm.get("area_m2"),
                 pm.get("length_m"),
                 pm.get("width_m"),
+                pm.get("height_m") or pm.get("height_proxy_m"),
                 pm.get("research_proxy", True),
                 e["calibration_id"],
+                row["notes"] or "",
             ]
         )
     data = buf.getvalue()

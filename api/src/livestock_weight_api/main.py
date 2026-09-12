@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db.sqlite import get_connection, init_db
-from .routers import events, sessions, status, sync
-from .routers import auth_status
+from .routers import auth_status, devices, events, reports, sessions, status, sync
+from .routers.devices import register_mock_local_device
 from .settings import settings
+
+
+def _mock_auto_register() -> bool:
+    """Register local mock device on API start (default on for demo-friendly mode)."""
+    v = os.environ.get("LW_MOCK_REGISTER_DEVICE", "true").lower()
+    return v in ("1", "true", "yes", "on")
 
 
 @asynccontextmanager
@@ -16,6 +23,8 @@ async def lifespan(app: FastAPI):
     conn = get_connection(settings.db_path)
     init_db(conn)
     app.state.db = conn
+    if _mock_auto_register():
+        register_mock_local_device(conn)
     yield
     conn.close()
 
@@ -39,6 +48,8 @@ app.include_router(status.router)
 app.include_router(sessions.router)
 app.include_router(sync.router)
 app.include_router(auth_status.router)
+app.include_router(reports.router)
+app.include_router(devices.router)
 
 
 @app.get("/health")

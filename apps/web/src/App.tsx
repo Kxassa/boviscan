@@ -13,6 +13,8 @@ import { signOutFirebase } from "./auth/firebase";
 import { getIdToken, getUserEmail, subscribeAuth } from "./auth/session";
 import { CalibrationChecklist } from "./components/CalibrationChecklist";
 import { DeviceStatusCard } from "./components/DeviceStatusCard";
+import { DevicesPage } from "./components/DevicesPage";
+import { FarmReports } from "./components/FarmReports";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LiveWeight } from "./components/LiveWeight";
 import { LoginScreen } from "./components/LoginScreen";
@@ -21,7 +23,7 @@ import { SessionHistory } from "./components/SessionHistory";
 import { useLiveWeightFeed } from "./hooks/useLiveWeightFeed";
 import { DEFAULT_LOCALE, type Locale, t } from "./i18n";
 
-type Page = "console" | "calibration";
+type Page = "console" | "calibration" | "reports" | "devices";
 
 export default function App() {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
@@ -113,6 +115,20 @@ export default function App() {
             </button>
             <button
               type="button"
+              className={page === "reports" ? "active" : ""}
+              onClick={() => setPage("reports")}
+            >
+              {t("nav.reports", locale)}
+            </button>
+            <button
+              type="button"
+              className={page === "devices" ? "active" : ""}
+              onClick={() => setPage("devices")}
+            >
+              {t("nav.devices", locale)}
+            </button>
+            <button
+              type="button"
               className={page === "calibration" ? "active" : ""}
               onClick={() => setPage("calibration")}
             >
@@ -133,6 +149,10 @@ export default function App() {
 
       {page === "calibration" ? (
         <CalibrationChecklist locale={locale} />
+      ) : page === "reports" ? (
+        <FarmReports locale={locale} />
+      ) : page === "devices" ? (
+        <DevicesPage locale={locale} />
       ) : (
         <>
           <div className="grid">

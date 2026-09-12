@@ -105,3 +105,68 @@ export async function fetchHealth(): Promise<{ ok: boolean; auth_enabled?: boole
 export async function fetchAuthStatus(): Promise<{ enabled: boolean } | null> {
   return getJson("/auth/status");
 }
+
+
+export type FarmReport = {
+  from_ts: string | null;
+  to_ts: string | null;
+  species_filter: string | null;
+  event_count: number;
+  with_weight_count: number;
+  avg_kg: number | null;
+  min_kg: number | null;
+  max_kg: number | null;
+  by_species: {
+    species: string;
+    count: number;
+    avg_kg: number | null;
+    min_kg: number | null;
+    max_kg: number | null;
+  }[];
+  disclaimer: string;
+  research_proxy: boolean;
+};
+
+export type KnownDevice = {
+  device_id: string;
+  display_name: string | null;
+  host: string | null;
+  port: number | null;
+  api_base: string | null;
+  version: string | null;
+  source: string;
+  online: boolean;
+  last_seen: string;
+  health: Record<string, unknown>;
+  registered_at?: string | null;
+};
+
+export async function fetchFarmReport(opts: {
+  dateFrom?: string;
+  dateTo?: string;
+  species?: string;
+} = {}): Promise<FarmReport | null> {
+  const q = new URLSearchParams();
+  if (opts.dateFrom) q.set("date_from", opts.dateFrom);
+  if (opts.dateTo) q.set("date_to", opts.dateTo);
+  if (opts.species) q.set("species", opts.species);
+  const qs = q.toString();
+  return getJson<FarmReport>(`/reports/farm${qs ? `?${qs}` : ""}`);
+}
+
+export function farmReportCsvUrl(opts: {
+  dateFrom?: string;
+  dateTo?: string;
+  species?: string;
+} = {}): string {
+  const q = new URLSearchParams();
+  if (opts.dateFrom) q.set("date_from", opts.dateFrom);
+  if (opts.dateTo) q.set("date_to", opts.dateTo);
+  if (opts.species) q.set("species", opts.species);
+  const qs = q.toString();
+  return `${BASE}/reports/farm/export.csv${qs ? `?${qs}` : ""}`;
+}
+
+export async function fetchDevices(): Promise<KnownDevice[]> {
+  return (await getJson<KnownDevice[]>("/devices")) ?? [];
+}

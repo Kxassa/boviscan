@@ -62,3 +62,9 @@ pytest -q tests/test_hailo_backend.py
 ```
 
 HEF checklist: `../ml/notes/hailo_hef_export.md`. Firestore soak: `../docs/FIRESTORE_SOAK.md`.
+
+
+## Phase 4 — discovery + OTA stubs
+
+- UDP beacon (default on): announces to LAN + `POST {api}/devices/beacon`. See `docs/DISCOVERY.md`.
+- OTA: `livestock_weight_device.ota.check_for_update()` / `apply_update()` — safe no-ops without `LW_OTA_MANIFEST_URL`. See `docs/OTA.md`.

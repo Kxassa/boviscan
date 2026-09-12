@@ -19,7 +19,7 @@ def client():
     # Fresh DB each test module load; truncate tables for isolation
     with TestClient(app) as c:
         conn = c.app.state.db
-        for t in ("weight_events", "weighing_sessions", "device_status", "sync_outbox"):
+        for t in ("weight_events", "weighing_sessions", "device_status", "sync_outbox", "devices"):
             conn.execute(f"DELETE FROM {t}")
         conn.commit()
         yield c

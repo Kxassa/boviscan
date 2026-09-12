@@ -16,6 +16,8 @@ from .camera.factory import create_camera
 from .config import load_config
 from .inference.factory import create_inference_backend
 from .pipeline.runner import Pipeline
+from .discovery.udp_beacon import start_udp_beacon, stop_udp_beacon
+from .ota.client import check_for_update
 
 
 def _maybe_start_session(api_base: str, device_id: str, notes: str | None) -> str | None:
@@ -104,6 +106,26 @@ def main(argv: list[str] | None = None) -> int:
     if post_api:
         _heartbeat(api_base, cfg.api.device_id, cfg.inference.backend, "running")
 
+    # LAN discovery beacon (UDP + HTTP register to companion /devices)
+    beacon_on = os.environ.get("LW_DISCOVERY_BEACON", "true").lower() in ("1", "true", "yes")
+    if beacon_on:
+        start_udp_beacon(
+            cfg.api.device_id,
+            display_name=f"BoviScan {cfg.api.device_id}",
+            version="0.1.0",
+            health={
+                "camera_ok": True,
+                "inference_backend": cfg.inference.backend,
+                "pipeline_state": "running",
+            },
+            api_base=api_base if post_api else None,
+        )
+
+    # OTA stub check (no-op without LW_OTA_MANIFEST_URL)
+    if os.environ.get("LW_OTA_CHECK", "").lower() in ("1", "true", "yes"):
+        ota = check_for_update()
+        print(f"ota: available={ota.update_available} reason={ota.reason}")
+
     pipeline = Pipeline(
         camera=camera,
         backend=backend,
@@ -135,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         if pipeline._post_errors:
             print(f"warn: {len(pipeline._post_errors)} API post error(s)", file=sys.stderr)
+    stop_udp_beacon()
     return 0
 
 

@@ -28,3 +28,13 @@ api:
   device_id: device-local-01
 # Set LW_POST_API=true or pass --post-api to POST WeightEvents to api.base_url
 # LW_HEF_PATH overrides inference.hef_path
+
+# LAN discovery (UDP beacon; mDNS documented in docs/DISCOVERY.md)
+# LW_DISCOVERY_BEACON=true (default) · LW_DISCOVERY_PORT=45454
+# discovery:
+#   enabled: true
+#   port: 45454
+#   interval_s: 5
+
+# OTA stubs (docs/OTA.md) — safe no-op without LW_OTA_MANIFEST_URL
+# LW_OTA_CHECK=true to print check_for_update status on start

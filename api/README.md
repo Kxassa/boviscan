@@ -62,3 +62,11 @@ pip install -e '.[firestore]'
 curl -X POST 'http://127.0.0.1:8000/sync/run'
 curl -X POST 'http://127.0.0.1:8000/sync/run?dry_run=true'
 ```
+
+
+## Phase 4 endpoints
+
+- `GET /reports/farm` — farm summary (date_from, date_to, species) avg/min/max kg + count
+- `GET /reports/farm/export.csv` — downloadable CSV with research disclaimer
+- `GET /devices` — LAN registry (last_seen, health); mock auto-registers `device-local-01`
+- `POST /devices/register` · `POST /devices/beacon`

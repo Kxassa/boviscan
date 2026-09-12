@@ -10,7 +10,7 @@ Repo / package path may still say `livestock-weight`; the product name is **Bovi
 
 | Path | Role |
 |------|------|
-| `docs/` | Product, architecture, hardware, AUTH, Firestore soak, data model, roadmap |
+| `docs/` | Product, architecture, hardware, AUTH, Firestore soak, discovery, OTA, data model, roadmap |
 | `device/` | Python edge: capture, inference stubs, pipeline, calibration, health |
 | `api/` | FastAPI companion: events, sessions, status, Firestore sync, optional Auth |
 | `apps/web/` | React (Vite) UI — default locale **pt-BR** (console + calibração + login) |
@@ -145,6 +145,35 @@ See **`docs/FIRESTORE_SOAK.md`**. Dry-run:
 python ops/scripts/firestore_soak_check.py
 # with SA / emulator: python ops/scripts/firestore_soak_check.py --write
 ```
+
+
+## Phase 4 — Product hardening
+
+### Farm reports + CSV
+
+```bash
+# JSON summary (date range + species)
+curl -s 'http://127.0.0.1:8000/reports/farm?date_from=2026-09-01&date_to=2026-09-12&species=cattle' | python3 -m json.tool
+# Downloadable CSV
+curl -OJ 'http://127.0.0.1:8000/reports/farm/export.csv?date_from=2026-09-01&date_to=2026-09-12'
+```
+
+Web (pt-BR): **Relatórios** — filter by date/species, summary cards (count / avg / min / max kg*), CSV download. Session CSV also includes disclaimer + session summary. Weights remain **research proxy**.
+
+### Devices / LAN discovery
+
+- Device UDP beacon (port **45454**) + HTTP `POST /devices/beacon`
+- `GET /devices` — known devices, `last_seen`, health snippet
+- Mock: API auto-registers `device-local-01` (`LW_MOCK_REGISTER_DEVICE=true`)
+- Docs: `docs/DISCOVERY.md` (UDP implemented; mDNS documented)
+
+Web: **Dispositivos** page.
+
+### OTA (design + stubs)
+
+- `docs/OTA.md` — signed manifest flow (ed25519 / sigstore-style), rollback
+- Device: `check_for_update` / `apply_update` safe no-ops without `LW_OTA_MANIFEST_URL`
+- Example schema: `ops/ota/manifest.schema.json`, `ops/ota/example-manifest.json` (no real keys)
 
 ## How pieces relate
 

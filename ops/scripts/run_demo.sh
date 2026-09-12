@@ -82,6 +82,13 @@ curl -sf "$API_BASE/events?session_id=$SESSION_ID&limit=10" | python3 -m json.to
 echo "==> Sync status (expect disabled/stub without credentials)"
 curl -sf -X POST "$API_BASE/sync/run" | python3 -m json.tool
 echo "==> CSV export: $API_BASE/sessions/$SESSION_ID/export.csv"
+echo "==> Farm report: $API_BASE/reports/farm"
+curl -sf "$API_BASE/reports/farm" | python3 -m json.tool | head -40 || true
+echo "==> Devices registry: $API_BASE/devices"
+curl -sf "$API_BASE/devices" | python3 -m json.tool | head -40 || true
+# Ensure mock device is visible (API also auto-registers on start)
+curl -sf -X POST "$API_BASE/devices/register" -H 'Content-Type: application/json' \
+  -d '{"device_id":"device-local-01","display_name":"BoviScan local (mock)","host":"127.0.0.1","source":"mock","version":"0.1.0","health":{"inference_backend":"cpu_mock"}}' >/dev/null || true
 
 cat <<MSG
 
@@ -93,11 +100,16 @@ Web UI (pt-BR):
   Open $WEB_URL
 
   - Console: start/stop session, live weight feed from API
+  - Relatórios: filtro por data / espécie, cards resumo, CSV
+  - Dispositivos: registry LAN (mock device-local-01)
   - Calibração: checklist 3 m / FOV / objeto de referência
 
 API docs: $API_BASE/docs
 Session:  $SESSION_ID
 CSV:      $API_BASE/sessions/$SESSION_ID/export.csv
+Farm CSV: $API_BASE/reports/farm/export.csv
+Devices:  $API_BASE/devices
+OTA docs: $ROOT/docs/OTA.md
 
 API will keep running until you Ctrl+C this script.
 ============================================================

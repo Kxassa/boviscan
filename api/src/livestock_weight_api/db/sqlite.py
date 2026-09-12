@@ -16,6 +16,29 @@ def get_connection(db_path: Path | None = None) -> sqlite3.Connection:
     return conn
 
 
+def _ensure_devices_table(c: sqlite3.Connection) -> None:
+    c.execute(
+        """
+        CREATE TABLE IF NOT EXISTS devices (
+          device_id TEXT PRIMARY KEY,
+          display_name TEXT,
+          host TEXT,
+          port INTEGER,
+          api_base TEXT,
+          version TEXT,
+          source TEXT NOT NULL DEFAULT 'manual',
+          online INTEGER NOT NULL DEFAULT 1,
+          last_seen TEXT NOT NULL,
+          health_json TEXT NOT NULL DEFAULT '{}',
+          registered_at TEXT
+        )
+        """
+    )
+    c.execute(
+        "CREATE INDEX IF NOT EXISTS idx_devices_last_seen ON devices(last_seen)"
+    )
+
+
 def init_db(conn: sqlite3.Connection | None = None) -> None:
     own = conn is None
     c = conn or get_connection()
@@ -27,6 +50,7 @@ def init_db(conn: sqlite3.Connection | None = None) -> None:
         c.execute(
             "ALTER TABLE weighing_sessions ADD COLUMN status TEXT NOT NULL DEFAULT 'active'"
         )
+    _ensure_devices_table(c)
     c.commit()
     if own:
         c.close()

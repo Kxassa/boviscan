@@ -55,10 +55,12 @@ Phased plan. Accuracy claims only after validated field studies. Farmer UI: **pt
 
 ## Phase 4 — Product hardening
 
-- [ ] Multi-device LAN discovery
-- [ ] OTA update channel (signed)
+- [x] Multi-device LAN discovery (UDP beacon + `/devices` registry; mDNS documented)
+- [x] OTA update channel design + stubs (`docs/OTA.md`, check/apply no-ops without manifest)
 - [ ] Optional additional locales (only after pt-BR is solid)
-- [ ] Richer farm reports beyond CSV
+- [x] Richer farm reports: `/reports/farm` + CSV; web Relatórios (pt-BR) with summary cards
+- [x] Expanded session CSV (disclaimer + summary + height proxy column)
+- [x] Mock mode auto-registers `device-local-01` on API start / demo
 
 ## Explicit non-goals (near term)
 

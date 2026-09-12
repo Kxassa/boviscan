@@ -52,3 +52,20 @@ CREATE TABLE IF NOT EXISTS sync_outbox (
 CREATE INDEX IF NOT EXISTS idx_events_ts ON weight_events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_events_session ON weight_events(session_id);
 CREATE INDEX IF NOT EXISTS idx_outbox_type ON sync_outbox(entity_type);
+
+
+CREATE TABLE IF NOT EXISTS devices (
+  device_id TEXT PRIMARY KEY,
+  display_name TEXT,
+  host TEXT,
+  port INTEGER,
+  api_base TEXT,
+  version TEXT,
+  source TEXT NOT NULL DEFAULT 'manual',
+  online INTEGER NOT NULL DEFAULT 1,
+  last_seen TEXT NOT NULL,
+  health_json TEXT NOT NULL DEFAULT '{}',
+  registered_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_devices_last_seen ON devices(last_seen);
