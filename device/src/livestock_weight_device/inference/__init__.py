@@ -1,7 +1,7 @@
 from .base import Detection, InferenceBackend
 from .factory import create_inference_backend
 from .mock import MockBackend, CPUMockBackend
-from .hailo_stub import HailoBackend
+from .hailo import HailoBackend, HailoRuntimeConfig, probe_hailo_sdk
 
 __all__ = [
     "Detection",
@@ -10,4 +10,6 @@ __all__ = [
     "MockBackend",
     "CPUMockBackend",
     "HailoBackend",
+    "HailoRuntimeConfig",
+    "probe_hailo_sdk",
 ]

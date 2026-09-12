@@ -59,8 +59,9 @@ Keep ≥20% free. Point `LW_API_DB_PATH` at `/var/lib/boviscan/companion.db` on 
 1. Install HAT per vendor instructions; reboot.
 2. Expect `/dev/hailo0` (or similar) when the driver is loaded.
 3. Install HailoRT; `hailortcli fw-control identify`.
-4. Until a HEF is deployed, set `inference.backend: cpu_mock` (or `hailo` which **stubs** to CPU — see `device/.../hailo_stub.py`).
-5. HEF export path: `ml/notes/hailo_hef_export.md`.
+4. Until a HEF is deployed, set `inference.backend: cpu_mock`, or `hailo` with `fallback_to_cpu: true` (production backend records clear errors and falls back — see `device/.../inference/hailo.py`).
+5. HEF export checklist: `ml/notes/hailo_hef_export.md`; placeholder CLI: `ml/export/export_hef_placeholder.sh`.
+6. Soak: `./ops/scripts/soak_device.sh 100 hailo` (FPS / p50/p95 / temp JSON under `artifacts/` or `/tmp`).
 
 ### 5. Device software
 
@@ -78,6 +79,7 @@ livestock-weight-device --steps 10
 
 - Pi 5 + Hailo under continuous inference runs warm — use enclosure vents / small fan.
 - Official **27 W** PSU; confirm HAT current draw separately.
+- Log FPS / latency / temp: `./ops/scripts/soak_device.sh 200 hailo` (requires HAT for meaningful Hailo numbers; cpu_mock works on laptop).
 - Monitor: `cat /sys/class/thermal/thermal_zone0/temp` (millidegrees) and `vcgencmd get_throttled` (`0x0` = good).
 - If throttled under load, improve airflow before trusting long sessions.
 

@@ -23,8 +23,16 @@ class CameraConfig:
 @dataclass
 class InferenceConfig:
     backend: str = "cpu_mock"  # hailo | cpu_mock | mock
-    model_path: str | None = None
+    model_path: str | None = None  # legacy alias; prefer hef_path for Hailo
+    hef_path: str | None = None
+    batch: int = 1
+    input_width: int = 640
+    input_height: int = 640
+    input_channels: int = 3
     confidence_threshold: float = 0.4
+    postprocess: str = "passthrough"  # passthrough | yolo_nms | none
+    fallback_to_cpu: bool = True
+    labels: list[str] = field(default_factory=lambda: ["livestock"])
 
 
 @dataclass
@@ -52,6 +60,29 @@ def _merge_dict(dc: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _coerce_inference(raw: dict[str, Any]) -> dict[str, Any]:
+    """Normalize YAML inference block (input_size shorthand, aliases)."""
+    from dataclasses import fields as dc_fields
+
+    out = dict(raw)
+    size = out.pop("input_size", None)
+    if isinstance(size, (list, tuple)) and len(size) >= 2:
+        out.setdefault("input_width", int(size[0]))
+        out.setdefault("input_height", int(size[1]))
+        if len(size) >= 3:
+            out.setdefault("input_channels", int(size[2]))
+    # postprocess_hooks in YAML wins over default postprocess from dataclass merge
+    if "postprocess_hooks" in out:
+        hooks = out.pop("postprocess_hooks")
+        if isinstance(hooks, list) and hooks:
+            out["postprocess"] = str(hooks[0])
+        elif isinstance(hooks, str):
+            out["postprocess"] = hooks
+    allowed = {f.name for f in dc_fields(InferenceConfig)}
+    return {k: v for k, v in out.items() if k in allowed}
+
+
+
 def load_config(path: str | Path | None = None) -> AppConfig:
     """Load config from YAML file and optional env overrides."""
     raw: dict[str, Any] = {}
@@ -61,7 +92,8 @@ def load_config(path: str | Path | None = None) -> AppConfig:
             raw = yaml.safe_load(f) or {}
 
     cam = {**CameraConfig().__dict__, **(raw.get("camera") or {})}
-    inf = {**InferenceConfig().__dict__, **(raw.get("inference") or {})}
+    inf_raw = {**InferenceConfig().__dict__, **(raw.get("inference") or {})}
+    inf = _coerce_inference(inf_raw)
     api = {**ApiConfig().__dict__, **(raw.get("api") or {})}
 
     # Env overrides (no secrets required)
@@ -69,6 +101,8 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         cam["backend"] = v
     if v := os.environ.get("LW_INFERENCE_BACKEND"):
         inf["backend"] = v
+    if v := os.environ.get("LW_HEF_PATH"):
+        inf["hef_path"] = v
     if v := os.environ.get("LW_API_BASE_URL"):
         api["base_url"] = v
     if v := os.environ.get("LW_DEVICE_ID"):

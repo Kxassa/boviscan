@@ -12,10 +12,19 @@ camera:
 
 inference:
   backend: cpu_mock      # hailo | cpu_mock | mock
-  model_path: null
+  # Hailo production (Phase 3): set backend: hailo and point at a local HEF
+  hef_path: null         # e.g. /opt/livestock-weight/models/detect.hef
+  model_path: null       # legacy alias for hef_path
+  batch: 1
+  input_size: [640, 640, 3]   # W, H, C — expected HEF input tensor
   confidence_threshold: 0.4
+  postprocess: passthrough    # passthrough | yolo_nms | none
+  # postprocess_hooks: [yolo_nms]  # optional list form; first entry used
+  fallback_to_cpu: true       # graceful fallback when SDK/HEF missing
+  labels: [livestock]
 
 api:
   base_url: http://127.0.0.1:8000
   device_id: device-local-01
 # Set LW_POST_API=true or pass --post-api to POST WeightEvents to api.base_url
+# LW_HEF_PATH overrides inference.hef_path

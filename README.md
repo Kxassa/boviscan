@@ -10,12 +10,12 @@ Repo / package path may still say `livestock-weight`; the product name is **Bovi
 
 | Path | Role |
 |------|------|
-| `docs/` | Product, architecture, hardware, AUTH, data model, roadmap |
+| `docs/` | Product, architecture, hardware, AUTH, Firestore soak, data model, roadmap |
 | `device/` | Python edge: capture, inference stubs, pipeline, calibration, health |
 | `api/` | FastAPI companion: events, sessions, status, Firestore sync, optional Auth |
 | `apps/web/` | React (Vite) UI — default locale **pt-BR** (console + calibração + login) |
-| `ml/` | Datasets schema, cattle YAML curves, eval MAE script, model card |
-| `ops/` | docker-compose (+ Firestore emulator profile), seed, **run_demo.sh**, **pi_bringup.sh** |
+| `ml/` | Datasets schema, cattle YAML curves, eval MAE, Hailo HEF export notes, model card |
+| `ops/` | docker-compose (+ Firestore emulator profile), seed, **run_demo.sh**, **pi_bringup.sh**, **soak_device.sh** |
 
 ## BOM (field device)
 
@@ -114,10 +114,42 @@ python device/scripts/capture_smoke.py --out /tmp/boviscan-still.jpg
 - Datasets: `ml/datasets/cattle|sheep|goat/` — CSV schema `image_id,scale_kg,bbox,date,farm_id`
 - MAE: `python ml/eval/eval_proxy_mae.py ml/eval/sample_proxy_vs_scale.csv`
 
+## Phase 3 — Hailo acceleration + soak prep
+
+### Hailo backend
+
+```bash
+cd device && source .venv/bin/activate
+# CI / laptop: selects hailo, falls back to cpu_mock with clear errors
+export LW_INFERENCE_BACKEND=hailo
+# optional: export LW_HEF_PATH=/opt/livestock-weight/models/detect.hef
+pytest -q tests/test_hailo_backend.py
+livestock-weight-device --steps 5   # uses config / env backend
+```
+
+Config knobs: `inference.hef_path`, `batch`, `input_size`, `postprocess`, `fallback_to_cpu`
+(see `device/config/device.example.yaml`). HEF export checklist: `ml/notes/hailo_hef_export.md`.
+
+### Soak harness (FPS / latency / temp)
+
+```bash
+./ops/scripts/soak_device.sh 100 cpu_mock
+# or: python device/scripts/soak.py --frames 100 --backend hailo --out artifacts/soak.json
+```
+
+### Firestore production soak
+
+See **`docs/FIRESTORE_SOAK.md`**. Dry-run:
+
+```bash
+python ops/scripts/firestore_soak_check.py
+# with SA / emulator: python ops/scripts/firestore_soak_check.py --write
+```
+
 ## How pieces relate
 
 ```
-Camera/Mock → detect (motion/blob|Hailo stub) → track → cattle YAML research proxy (kg)
+Camera/Mock → detect (motion/blob|Hailo HEF / cpu fallback) → track → cattle YAML research proxy (kg)
                                                     → WeightEvent POST → companion API (SQLite)
                                                                          ↓ outbox + backoff
                                                                  Firestore (boviscan-c2430)

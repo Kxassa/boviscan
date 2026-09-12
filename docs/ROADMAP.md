@@ -38,15 +38,20 @@ Phased plan. Accuracy claims only after validated field studies. Farmer UI: **pt
 - [x] Cattle proxy curves as configurable YAML; research labels kept
 - [x] Eval script: proxy vs scale_kg → MAE (MODEL_CARD describes how to fill; no fabricated metrics)
 - [x] Docs: Auth + Firestore emulator + Pi bring-up in README
-- [ ] Production Firestore soak with real credentials on boviscan-c2430
+- [x] Production Firestore soak **runbook** + dry-run check script (`docs/FIRESTORE_SOAK.md`)
+- [ ] Production Firestore soak with real credentials on boviscan-c2430 (field / ops)
 - [ ] Collect labeled field datasets per species
 - [ ] Holdout eval on real scale weights; fill MODEL_CARD with measured MAE only
 
-## Phase 3 — Hailo acceleration
+## Phase 3 — Hailo acceleration + soak prep
 
-- [ ] Export detection/pose/proxy models to HEF (documented path)
-- [ ] Production Hailo backend replacing stub
-- [ ] Thermal/power soak tests on enclosed Pi 5 + HAT
+- [x] Export detection/pose/proxy models to HEF (**documented** path + placeholder CLI script)
+- [x] Production Hailo backend (HEF from config; SDK infer when present; clear CPU fallback)
+- [x] Config YAML: `hef_path`, `batch`, `input_size`, postprocess hooks; `cpu_mock` kept for CI
+- [x] Integration test: hailo backend selected → graceful fallback without SDK
+- [x] Performance / thermal soak harness (`device/scripts/soak.py`, `ops/scripts/soak_device.sh`)
+- [ ] Thermal/power soak tests on enclosed Pi 5 + HAT (hardware-blocked)
+- [ ] Real HEF compiled + validated on Hailo-8 (hardware / DFC workstation)
 
 ## Phase 4 — Product hardening
 

@@ -1,6 +1,6 @@
 # device — BoviScan edge runtime
 
-Python package: Camera Module 3 capture (picamera2) + MockCamera, Hailo stub + CPU/mock inference, multi-track IoU tracker, **cattle research weight proxy** (area/height table), health checks.
+Python package: Camera Module 3 capture (picamera2) + MockCamera, Hailo production backend (HEF + SDK with cpu_mock fallback) + CPU/mock inference, multi-track IoU tracker, **cattle research weight proxy** (area/height table), health checks, soak harness.
 
 Default camera height **3.0 m**. Species default **cattle**.
 
@@ -36,7 +36,7 @@ Details: `docs/HARDWARE.md`.
 3. `pip install -e ".[pi,dev]"` inside a venv
 4. Copy `config/device.example.yaml` → `/etc/livestock-weight/device.yaml`
 5. Set `camera.backend: picamera2`, `camera.height_m: 3.0`
-6. Optional: `inference.backend: hailo` when HEF + HailoRT are installed (stub falls back otherwise)
+6. Optional: `inference.backend: hailo` + `hef_path` when HEF + HailoRT are installed (clear fallback to cpu_mock otherwise)
 7. Install `systemd/livestock-weight-device.service` and start the unit
 
 ## Weight proxy
@@ -48,8 +48,17 @@ Details: `docs/HARDWARE.md`.
 | Concern | Interface | Mocks |
 |---------|-----------|-------|
 | Capture | `Camera` | `MockCamera` |
-| Inference | `InferenceBackend` | `MockBackend`, `CPUMockBackend`, `HailoBackend` stub |
+| Inference | `InferenceBackend` | `MockBackend`, `CPUMockBackend`, `HailoBackend` (SDK/HEF or fallback) |
 | Tracking | `SimpleTracker` | IoU IDs across frames |
 | Geometry | `Calibration` | defaults at 3.0 m + cattle table |
 
 Farmer-facing copy for install UIs lives in the web app (**pt-BR** for v1).
+
+## Soak / Hailo
+
+```bash
+python scripts/soak.py --frames 100 --backend cpu_mock --out /tmp/soak.json
+pytest -q tests/test_hailo_backend.py
+```
+
+HEF checklist: `../ml/notes/hailo_hef_export.md`. Firestore soak: `../docs/FIRESTORE_SOAK.md`.
